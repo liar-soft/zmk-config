@@ -5,37 +5,41 @@
 / {
     chosen {
         zmk,kscan = &kscan0;
-        zmk,display = &oled; // 绑定OLED
+        zmk,display = &oled;
     };
 
-    // ===== ZMK v0.2 专用 OLED 配置（128x32 长条屏）=====
+    // ===== 适配128x16超窄长条屏（长宽比8:1，>5倍）=====
     oled: oled {
         compatible = "zmk,oled-display";
-        // v0.2 不用 dimensions，用宏定义指定分辨率
-        status-screen {
-            compatible = "zmk,status-screen";
-            widgets = <&layer &bt &batt>; // 显示层+蓝牙+电池
+        // ZMK v0.2 专用：禁用复杂状态栏，只保留极简文本显示（和你原图一致）
+        simple-display {
+            compatible = "zmk,simple-display";
+            // 显示内容：层（Base）+ 蓝牙配置（XCM）+ 电池，和你原图完全匹配
+            format = "L:%l BT:%b BAT:%p%%";
+            // 128x16超窄屏专属：字体缩小+显示区域居中
+            font = "zmk,font-mono-4x6"; // 适配超窄屏的最小字体
+            offset-x = <0>;
+            offset-y = <0>;
         };
-        // 显式指定 Sofle v2 OLED 引脚（I2C 总线，必加！）
+        // 超窄屏必须的I2C配置（供电+通信）
         i2c {
             compatible = "i2c-device";
-            label = "OLED_I2C";
             i2c-bus = <&i2c0>;
-            i2c-address = <0x3C>; // 绝大多数OLED的默认地址
+            i2c-address = <0x3C>; // 多数128x16屏默认地址，不行改0x3D
         };
-        // 长条屏竖屏显示（rotation=90，适配5:1比例）
-        rotation = <90>;
+        // 横屏显示（和你原图一致，不旋转）
+        rotation = <0>;
     };
 
-    // ===== Sofle v2 I2C 总线配置（给OLED供电/通信）=====
+    // ===== Sofle v2 I2C总线（给128x16屏供电）=====
     &i2c0 {
         status = "okay";
         sda-pin = <&gpio0 06 GPIO_ACTIVE_HIGH>;
         scl-pin = <&gpio0 07 GPIO_ACTIVE_HIGH>;
-        clock-frequency = <400000>; // I2C 通信频率
+        clock-frequency = <100000>; // 128x16屏用低速I2C更稳定
     };
 
-    // ===== 基础键位（无需修改）=====
+    // ===== 基础键位（不变）=====
     keymap {
         compatible = "zmk,keymap";
         default_layer {
@@ -49,7 +53,7 @@
         };
     };
 
-    // ===== 键盘扫描配置（无需修改）=====
+    // ===== 键盘扫描配置（不变）=====
     &kscan0 {
         compatible = "zmk,kscan-gpio-matrix";
         row-gpios = <&gpio0 29 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
