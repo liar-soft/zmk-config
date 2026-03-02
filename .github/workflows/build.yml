@@ -13,8 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [nice_nano_v2]  # ZMK v0.2 正确的BOARD名称
-        # 修复：用通用Sofle shield名称，而非Aurora专属
+        board: [nice_nano_v2]
         shield: [sofle_left, sofle_right]
 
     steps:
@@ -29,16 +28,13 @@ jobs:
       - name: Initialize West
         run: |
           west init -l config
-          west update  # 仅用你v0.2版本初始化，无ref错误
+          west update
           west zephyr-export
 
       - name: Build Firmware
         run: |
-          west build -s zmk/app -d build/${{ matrix.shield }} \
-            -b ${{ matrix.board }} \
-            -DSHIELD=${{ matrix.shield }} \
-            -DCONFIG_ZMK_STUDIO=y \
-            -DCONFIG_SOFTDEVICE_S140_611=y
+          # 关键修复：所有参数单行书写，避免解析错误
+          west build -s zmk/app -d build/${{ matrix.shield }} -b ${{ matrix.board }} -DSHIELD=${{ matrix.shield }} -DCONFIG_ZMK_STUDIO=y -DCONFIG_SOFTDEVICE_S140_611=y
 
       - name: Prepare Artifacts
         run: |
