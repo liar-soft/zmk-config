@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:3.5
+    strategy:
+      matrix:
+        config:
+          - { shield: splitkb_aurora_sofle_left, board: nice_nano_v2, snippet: studio-rpc-usb-uart }
+          - { shield: splitkb_aurora_sofle_right, board: nice_nano_v2 }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,7 +28,7 @@ jobs:
             zephyr/
             bootloader/
             zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_id }}-${{
             hashFiles('config/west.yml', 'config/**/west.yml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -32,6 +37,8 @@ jobs:
 
       - name: Initialize workspace (west init)
         run: |
+          # 清理可能存在的旧配置
+          rm -rf .west
           west init -l config
 
       - name: Update modules (west update)
@@ -42,24 +49,17 @@ jobs:
         run: |
           west zephyr-export
 
-      - name: Build Left Shield
+      - name: Build (${{ matrix.config.shield }})
         run: |
-          west build -s zmk/app -d build/left -b nice_nano_v2 -- -DSHIELD=sofle_left
+          west build -s zmk/app -d build/${{ matrix.config.shield }} \
+            -b ${{ matrix.config.board }} \
+            -- -DSHIELD=${{ matrix.config.shield }} \
+            -DCONFIG_ZMK_STUDIO=y \
+            ${{ matrix.config.snippet && format('-DSNIPPET={0}', matrix.config.snippet) || '' }}
 
-      - name: Build Right Shield
-        run: |
-          west build -s zmk/app -d build/right -b nice_nano_v2 -- -DSHIELD=sofle_right
-
-      - name: Archive Left Firmware
+      - name: Archive Firmware (${{ matrix.config.shield }})
         uses: actions/upload-artifact@v4
         with:
-          name: sofle_left
-          path: build/left/zephyr/zmk.uf2
-          retention-days: 30
-
-      - name: Archive Right Firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: sofle_right
-          path: build/right/zephyr/zmk.uf2
+          name: ${{ matrix.config.shield }}
+          path: build/${{ matrix.config.shield }}/zephyr/zmk.uf2
           retention-days: 30
