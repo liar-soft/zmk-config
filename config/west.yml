@@ -5,7 +5,12 @@ manifest:
   projects:
     - name: zmk
       remote: zmkfirmware
-      revision: main
-      import: app/west.yml
+      revision: main  # 锁定稳定版，避免最新版兼容问题
+      import:
+        name-allowlist:
+          - zephyr
+          - hal_nordic
+          - mcuboot
+          - tinyusb
   self:
     path: config
