@@ -12,17 +12,16 @@
 
 / {
     chosen {
-        zmk,display = &oled;
+        zmk,display = &oled;  /* 这一行将 "oled" 节点指定为系统的显示设备 */
     };
 
-    // OLED 屏幕配置
-    oled: oled {
+    oled: oled {               /* 这是 oled 节点的定义 */
         compatible = "zmk,oled";
-        display = &ssd1306;
+        display = <&ssd1306>;  /* 指定驱动芯片型号 */
         width = <128>;
         height = <32>;
     };
-
+};
     // 编码器配置
     sensors {
         compatible = "zmk,keymap-sensors";
@@ -43,7 +42,7 @@
                 &kp LCTRL &kp A  &kp S  &kp D  &kp F  &kp G
                 &kp LSHFT &kp Z  &kp X  &kp C  &kp V  &kp B
                 // 底部拇指键（5个）
-                &kp LALT  &kp LGUI  &kp SPACE  &kp DEL  &kp RET
+                &kp LALT  &studio_unlock  &kp SPACE  &kp DEL  &kp RET
                 
                 // 右手：4行×6列
                 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp BSPC
