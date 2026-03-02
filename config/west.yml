@@ -1,12 +1,8 @@
 manifest:
-  remotes:
-    - name: zmkfirmware
-      url-base: https://github.com/zmkfirmware
   projects:
     - name: zmk
-      remote: zmkfirmware
-      # 锁定稳定版v0.17.1，避免main分支的结构变更问题
-      revision: v0.17.1
-      path: zmk
+      url: https://github.com/zmkfirmware/zmk.git
+      revision: v0.2  # 这是ZMK的稳定版本，对应Zephyr 3.5
+      import: app/west.yml
   self:
     path: config

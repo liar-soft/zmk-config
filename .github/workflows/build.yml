@@ -1,4 +1,3 @@
-# 替换原有 build.yml 内容，直接复制即可
 name: Build ZMK Firmware
 
 on:
@@ -14,40 +13,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # ZMK v0.2 版本的正确BOARD名称：nice_nano_v2（带下划线）
-        board: [nice_nano_v2]
-        shield:
-          - splitkb_aurora_sofle_left
-          - splitkb_aurora_sofle_right
+        board: [nice_nano_v2]  # ZMK v0.2 正确的BOARD名称
+        # 修复：用通用Sofle shield名称，而非Aurora专属
+        shield: [sofle_left, sofle_right]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive
 
-      - name: Cache west modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            zmk/.west
-            zmk/modules
-          key: ${{ runner.os }}-west-${{ hashFiles('west.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-west-
-
-      - name: Install ZMK dependencies
-        run: |
-          sudo apt update && sudo apt install -y ninja-build gperf \
-            python3-dev python3-pip python3-setuptools python3-wheel xz-utils file \
-            make gcc gcc-multilib g++-multilib libsdl2-dev libmagic1
-          pip3 install west
+      - name: Install West
+        run: pip3 install west==1.2.0
 
       - name: Initialize West
         run: |
           west init -l config
-          west update
+          west update  # 仅用你v0.2版本初始化，无ref错误
           west zephyr-export
 
       - name: Build Firmware
@@ -55,13 +37,13 @@ jobs:
           west build -s zmk/app -d build/${{ matrix.shield }} \
             -b ${{ matrix.board }} \
             -DSHIELD=${{ matrix.shield }} \
-            -DCONFIG_ZMK_STUDIO=y
-        # 移除pillbug相关依赖，避免重复定义
+            -DCONFIG_ZMK_STUDIO=y \
+            -DCONFIG_SOFTDEVICE_S140_611=y
 
       - name: Prepare Artifacts
         run: |
           mkdir -p firmware
-          cp build/${{ matrix.shield }}/zephyr/zmk.uf2 firmware/${{ matrix.shield }}-${{ matrix.board }}.uf2
+          cp build/${{ matrix.shield }}/zephyr/zmk.uf2 firmware/sofle_${{ matrix.shield }}_nicenano_v2.uf2
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
