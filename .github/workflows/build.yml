@@ -9,10 +9,10 @@ jobs:
       image: zmkfirmware/zmk-build-arm:3.5
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache west modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-zephyr-modules
         with:
@@ -42,13 +42,15 @@ jobs:
           west build -s zmk/app -d build/right -b nice_nano_v2 -- -DSHIELD=sofle_right
 
       - name: Archive Left Firmware
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sofle_left
           path: build/left/zephyr/zmk.uf2
+          retention-days: 30
 
       - name: Archive Right Firmware
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sofle_right
           path: build/right/zephyr/zmk.uf2
+          retention-days: 30
