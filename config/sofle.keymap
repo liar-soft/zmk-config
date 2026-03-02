@@ -42,7 +42,7 @@
                 &kp LCTRL &kp A  &kp S  &kp D  &kp F  &kp G
                 &kp LSHFT &kp Z  &kp X  &kp C  &kp V  &kp B
                 // 底部拇指键（5个）
-                &kp LALT  &studio_unlock  &kp SPACE  &kp DEL  &kp RET
+                &kp LALT  &studio_unlock  &kp SPACE  &out OUT_TOG  &kp RET
                 
                 // 右手：4行×6列
                 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp BSPC
