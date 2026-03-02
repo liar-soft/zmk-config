@@ -33,8 +33,8 @@ jobs:
 
       - name: Build Firmware
         run: |
-          # 关键修复：所有参数单行书写，避免解析错误
-          west build -s zmk/app -d build/${{ matrix.shield }} -b ${{ matrix.board }} -DSHIELD=${{ matrix.shield }} -DCONFIG_ZMK_STUDIO=y -DCONFIG_SOFTDEVICE_S140_611=y
+          # ZMK v0.2 专用格式：-- 后传递编译参数，避免参数解析错误
+          west build -s zmk/app -d build/${{ matrix.shield }} -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DCONFIG_ZMK_STUDIO=y -DCONFIG_SOFTDEVICE_S140_611=y
 
       - name: Prepare Artifacts
         run: |
