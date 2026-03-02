@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 适配v0.17.1的board名称（nicenano_v2 正确）
-        board: [nicenano_v2]
+        # ZMK v0.2 版本的正确BOARD名称：nice_nano_v2（带下划线）
+        board: [nice_nano_v2]
         shield:
           - splitkb_aurora_sofle_left
           - splitkb_aurora_sofle_right
