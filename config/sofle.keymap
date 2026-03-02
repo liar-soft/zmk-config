@@ -1,79 +1,67 @@
-/*
- * Sofle v2 + 128x32 OLED + nice!nano v2 适配
- */
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
-#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/gpio/gpio.h>
 
 / {
     chosen {
         zmk,kscan = &kscan0;
-        zmk,display = &oled;  // 绑定OLED显示屏
-        zmk,split-bluetooth = &bt_conn;
+        zmk,display = &oled; // 绑定OLED
     };
 
-    // 128x32 长条OLED配置（竖屏显示可改rotation为90）
+    // ===== ZMK v0.2 专用 OLED 配置（128x32 长条屏）=====
     oled: oled {
         compatible = "zmk,oled-display";
-        dimensions = <128 32>;  // 你的长条屏分辨率
-        rotation = <0>;         // 0=横屏，90=竖屏（根据你的屏幕方向调整）
+        // v0.2 不用 dimensions，用宏定义指定分辨率
         status-screen {
             compatible = "zmk,status-screen";
-            widgets = <&layer &bt &batt>;  // 显示：层+蓝牙+电池（和你状态栏一致）
+            widgets = <&layer &bt &batt>; // 显示层+蓝牙+电池
         };
+        // 显式指定 Sofle v2 OLED 引脚（I2C 总线，必加！）
+        i2c {
+            compatible = "i2c-device";
+            label = "OLED_I2C";
+            i2c-bus = <&i2c0>;
+            i2c-address = <0x3C>; // 绝大多数OLED的默认地址
+        };
+        // 长条屏竖屏显示（rotation=90，适配5:1比例）
+        rotation = <90>;
     };
 
-    bt_conn: bt_conn {
-        compatible = "zmk,bt-conn";
-        bt-addr-primary = <BT_ADDR_PRIMARY>;
-        bt-addr-secondary = <BT_ADDR_SECONDARY>;
+    // ===== Sofle v2 I2C 总线配置（给OLED供电/通信）=====
+    &i2c0 {
+        status = "okay";
+        sda-pin = <&gpio0 06 GPIO_ACTIVE_HIGH>;
+        scl-pin = <&gpio0 07 GPIO_ACTIVE_HIGH>;
+        clock-frequency = <400000>; // I2C 通信频率
     };
 
+    // ===== 基础键位（无需修改）=====
     keymap {
         compatible = "zmk,keymap";
-
-        // 基础层（可根据自己习惯修改键位）
         default_layer {
             bindings = <
-    // 左半区
-    &esc  &1    &2    &3    &4    &5                   &6    &7    &8    &9    &0    &minus
-    &tab  &q    &w    &e    &r    &t                   &y    &u    &i    &o    &p    &equals
-    &caps &a    &s    &d    &f    &g                   &h    &j    &k    &l    &scln &quote
-    &lsft &z    &x    &c    &v    &b                   &n    &m    &comma &dot  &slash &rsft
-    &lctrl &lgui &alt  &backspace &space       &enter  &down &up   &right &del  &rctrl
-    // 右半区（分体键盘自动匹配）
+                &esc  &1    &2    &3    &4    &5                   &6    &7    &8    &9    &0    &minus
+                &tab  &q    &w    &e    &r    &t                   &y    &u    &i    &o    &p    &equals
+                &caps &a    &s    &d    &f    &g                   &h    &j    &k    &l    &scln &quote
+                &lsft &z    &x    &c    &v    &b                   &n    &m    &comma &dot  &slash &rsft
+                &lctrl &lgui &alt  &backspace &space  &enter       &left &down &up   &right &del  &rctrl
             >;
-            sensor-bindings = <&inc_dec_kp VOLU VOLD>;
         };
     };
-};
 
-&kscan0 {
-    compatible = "zmk,kscan-gpio-matrix";
-    label = "KSCAN";
-    row-gpios
-        = <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 28 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 27 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 26 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-    col-gpios
-        = <&gpio0 20 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 21 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 23 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 24 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio0 25 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&gpio1 06 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-};
-
-&spi0 {
-    status = "okay";
-    oled_spi: oled_spi@0 {
-        status = "okay";
-        compatible = "jedec,spi-nor";
-        reg = <0>;
-        spi-max-frequency = <1000000>;
-        spi-cpol = <0>;
-        spi-cpha = <0>;
+    // ===== 键盘扫描配置（无需修改）=====
+    &kscan0 {
+        compatible = "zmk,kscan-gpio-matrix";
+        row-gpios = <&gpio0 29 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 28 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 27 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 26 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 22 GPIO_ACTIVE_LOW GPIO_PULL_UP>;
+        col-gpios = <&gpio0 20 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 21 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 23 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 24 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio0 25 GPIO_ACTIVE_LOW GPIO_PULL_UP>,
+                    <&gpio1 06 GPIO_ACTIVE_LOW GPIO_PULL_UP>;
     };
 };
