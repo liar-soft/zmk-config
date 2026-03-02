@@ -17,21 +17,30 @@ jobs:
           cache-name: cache-zephyr-modules
         with:
           path: |
+            .west
             modules/
             tools/
             zephyr/
             bootloader/
             zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('config/west.yml') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{
+            hashFiles('config/west.yml', 'config/**/west.yml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: West Init
+      - name: Initialize workspace (west init)
         run: |
-          west init -l config/
+          west init -l config
+
+      - name: Update modules (west update)
+        run: |
           west update
+
+      - name: Export Zephyr CMake package
+        run: |
+          west zephyr-export
 
       - name: Build Left Shield
         run: |
